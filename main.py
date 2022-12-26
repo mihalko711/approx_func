@@ -67,8 +67,9 @@ class Network():
             nabla_w = [nw + dnw for nw, dnw in
                        zip(nabla_w, delta_nabla_w)]  # вычисление градиента весов для каждого из слоев
 
-        eps = eta / len(
-            mini_batch)  # eps назовем коэффициентом длины шага, если eps будет слишком большим, то будем проходить мимо минимумов
+        #eps = eta / len(mini_batch) первоначальный вариант
+        eps=eta #второй вариант, пока выбрали его, ибо не нужно ориентироваться на размер батча при выборе входных параметров
+        # eps назовем коэффициентом длины шага, если eps будет слишком большим, то будем проходить мимо минимумов
         # если же будет слишком малым, то мы до минимума и не дойдем,а зависит он от соотношения обучающего коэфф-та и объема подвыборки
         self.weights = [w - eps * nw for w, nw in
                         zip(self.weights, nabla_w)]  # изменение весов на основе градиента(делаем шаг к минимуму)
@@ -112,180 +113,185 @@ class Network():
         """
         return (output_activations - y)
 
+choice=int(input('Выберите функцию для аппроксимации:'
+             '1.1/x  2.e^(-x)  3.cos(x)  4.0.5*sin(pi*x1^2)*sin(pi*x2): '))
 
-x_train = 99 * np.random.rand(100,
-                              1) + 1  # это обучающая выборка, чуть позже мы объединяем x и у, чтобы отдать на вход сети (размер можно менять, в данном случае тут 100 элементов)
-y_train = 1 / x_train
+if choice==1:
+    x_train = 99 * np.random.rand(250,
+                                  1) + 1  # это обучающая выборка, чуть позже мы объединяем x и у, чтобы отдать на вход сети (размер можно менять, в данном случае тут 100 элементов)
+    y_train = 1 / x_train
 
-x_test = 99 * np.random.rand(200,
-                             1) + 1  # это выборка для тестирования (размер можно менять, в данном случае тут 200 элементов)
-y_test = 1 / x_test
+    x_test = 99 * np.random.rand(40,
+                                 1) + 1  # это выборка для тестирования (размер можно менять, в данном случае тут 200 элементов)
+    y_test = 1 / x_test
 
-epochs = int(input('Введите количество шагов алгоритма(пример 300): '))  # кол-во шагов
-batch_size = int(input('Введите размер подвыборки(пример 5): '))  # размер подвыборки, на основе которой будет считаться градиент функции потерь
-eta = int(input('Введите коэффицент обучаемости (пример 5): ')) # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
-
-
-for i in range(1, 15):
-    data_train = np.concatenate((x_train, y_train), 1)  # объединяем x c y  для подачи в класс сети
-
-
-    nn = Network([1, i,
-                  1])  # инициализация сети [кол-во нейронов во входном слое, кол-во нейронов в скрытом слое, кол-во нейронов в выходном слое]
-    nn.SGD(data_train, epochs, batch_size, eta)  # запуск градиентного спуска
-
-    x = np.arange(1.0, 100.0, 0.01)  # здесь мы создаем x и y  чисто для того, чтобы начертить график
-    y = 1 / x
-
-    y_pred = np.array([nn.feedforward(x) for x in x_test.flatten()])  # предсказания сети на выборке для тестирования
-
-    error = 100 * np.sum(np.abs((y_pred.flatten() - y_test.flatten()) / y_test.flatten())) / len(
-        y_test.flatten())  # считаем относительную ошибку аппроксимации по формуле sum(|(y-y_предсказанное)/y|)/кол-во
-
-    print('Количество нейронов в скрытом слое:{0}'.format(i))
-    print('Количество эпох:{0}'.format(epochs))
-    print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
-    print('Обучающий коэффициент:{0}'.format(eta))
-    print('Ошибка:{:.2f}%'.format(error))
-
-    fig, ax = plt.subplots()
-    ax.plot(x, y)  # строим график функции
-
-    ax.set(xlabel='x', ylabel='1/x', title='y=1/x слои:{0} шаги:{1} коэф.об-ти:{2} выборка:{3} ошибка:{4:.2f}%'.format(i,epochs,eta, batch_size,error))
-    ax.grid()
-
-    plt.scatter(x_test, y_pred)  # добавляем на график точки, полученные от нейросети
-    plt.scatter(x_test, y_test)  # для контраста добавляем реальные значения функции в этих точках
-    plt.show()  # отображаем график
-    fig.savefig('plots/first_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
+    epochs = int(input('Введите количество шагов алгоритма(500-1500): '))  # кол-во шагов
+    batch_size = int(input('Введите размер подвыборки(3-10): '))  # размер подвыборки, на основе которой будет считаться градиент функции потерь
+    eta = float(input('Введите коэффицент обучаемости (0.1-1.5): ')) # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
 
 
-epochs = int(input('Введите количество шагов алгоритма(пример 300): '))  # кол-во шагов
-batch_size = int(input('Введите размер подвыборки(пример 5): '))  # размер подвыборки, на основе которой будет считаться градиент функции потерь
-eta = int(input('Введите коэффицент обучаемости (пример 5): ')) # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
-
-x_train = 9 * np.random.rand(100, 1) + 1
-y_train = np.exp((-1) * x_train)
-
-x_test = 9 * np.random.rand(200, 1) + 1
-y_test = np.exp((-1) * x_test)
-
-for i in range(1, 15):
-    data_train = np.concatenate((x_train, y_train), 1)
-
-    nn = Network([1, i, 1])
-    nn.SGD(data_train, epochs, batch_size, eta)
-
-    x = np.arange(1.0, 10.0, 0.01)
-    y = np.exp((-1) * x)
-
-    y_pred = np.array([nn.feedforward(x) for x in x_test.flatten()])
-    error = 100 * np.sum(np.abs((y_pred.flatten() - y_test.flatten()) / y_test.flatten())) / len(y_test.flatten())
-    print('Количество нейронов в скрытом слое:{0}'.format(i))
-    print('Количество эпох:{0}'.format(epochs))
-    print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
-    print('Обучающий коэффициент:{0}'.format(eta))
-    print('Ошибка:{:.2f}%'.format(error))
-
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
-
-    ax.set(xlabel='x', ylabel='y', title='y=e^(-x) слои:{0} шаги:{1} коэф.об-ти:{2} выборка:{3} ошибка:{4:.2f}%'.format(i,epochs,eta, batch_size,error))
-    ax.grid()
-
-    plt.scatter(x_test, y_pred)
-    plt.scatter(x_test, y_test)
-    plt.show()
-    fig.savefig('plots/second_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
-
-x_train = (np.pi / 2 - 1) * np.random.rand(100, 1) + 1
-y_train = np.cos(x_train)
-
-x_test = (np.pi / 2 - 1) * np.random.rand(20, 1) + 1
-y_test = np.cos(x_test)
-
-epochs = int(input('Введите количество шагов алгоритма(пример 300): '))  # кол-во шагов
-batch_size = int(input('Введите размер подвыборки(пример 5): '))  # размер подвыборки, на основе которой будет считаться градиент функции потерь
-eta = int(input('Введите коэффицент обучаемости (пример 5): ')) # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
+    for i in range(1, 15):
+        data_train = np.concatenate((x_train, y_train), 1)  # объединяем x c y  для подачи в класс сети
 
 
-for i in range(3, 10):
-    data_train = np.concatenate((x_train, y_train), 1)
+        nn = Network([1, i,
+                      1])  # инициализация сети [кол-во нейронов во входном слое, кол-во нейронов в скрытом слое, кол-во нейронов в выходном слое]
+        nn.SGD(data_train, epochs, batch_size, eta)  # запуск градиентного спуска
 
-    nn = Network([1, i, 1])
-    nn.SGD(data_train, epochs, batch_size, eta)
+        x = np.arange(1.0, 100.0, 0.01)  # здесь мы создаем x и y  чисто для того, чтобы начертить график
+        y = 1 / x
 
-    x = np.arange(1.0, 1.58, 0.01)
-    y = np.cos(x)
+        y_pred = np.array([nn.feedforward(x) for x in x_test.flatten()])  # предсказания сети на выборке для тестирования
 
-    y_pred = np.array([nn.feedforward(x) for x in x_test.flatten()])
-    error = 100 * np.sum(np.abs((y_pred.flatten() - y_test.flatten()) / y_test.flatten())) / len(y_test.flatten())
-    print('Количество нейронов в скрытом слое:{0}'.format(i))
-    print('Количество эпох:{0}'.format(epochs))
-    print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
-    print('Обучающий коэффициент:{0}'.format(eta))
-    print('Ошибка:{:.2f}%'.format(error))
+        error = 100 * np.sum(np.abs((y_pred.flatten() - y_test.flatten()) / y_test.flatten())) / len(
+            y_test.flatten())  # считаем относительную ошибку аппроксимации по формуле sum(|(y-y_предсказанное)/y|)/кол-во
 
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
+        print('Количество нейронов в скрытом слое:{0}'.format(i))
+        print('Количество эпох:{0}'.format(epochs))
+        print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
+        print('Обучающий коэффициент:{0}'.format(eta))
+        print('Ошибка:{:.2f}%'.format(error))
 
-    ax.set(xlabel='x', ylabel='y', title='y=cos(x) слои:{0} шаги:{1} коэф.об-ти:{2} выборка:{3} ошибка:{4:.2f}%'.format(i,epochs,eta, batch_size,error))
-    ax.grid()
+        fig, ax = plt.subplots()
+        ax.plot(x, y)  # строим график функции
 
-    plt.scatter(x_test, y_pred)
-    plt.scatter(x_test, y_test)
-    plt.show()
-    fig.savefig('plots/third_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
+        ax.set(xlabel='x', ylabel='1/x', title='y=1/x слои:{0} шаги:{1} коэф.об-ти:{2} выборка:{3} ошибка:{4:.2f}%'.format(i,epochs,eta, batch_size,error))
+        ax.grid()
 
+        plt.scatter(x_test, y_pred)  # добавляем на график точки, полученные от нейросети
+        plt.scatter(x_test, y_test)  # для контраста добавляем реальные значения функции в этих точках
+        plt.show()  # отображаем график
+        fig.savefig('plots/first_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
 
-epochs = int(input('Введите количество шагов алгоритма(пример 300): '))  # кол-во шагов
-batch_size = int(input('Введите размер подвыборки(пример 5): '))  # размер подвыборки, на основе которой будет считаться градиент функции потерь
-eta = int(input('Введите коэффицент обучаемости (пример 5): ')) # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
+elif choice == 2:
+    epochs = int(input('Введите количество шагов алгоритма(500-1500): '))  # кол-во шагов
+    batch_size = int(input('Введите размер подвыборки(3-10): '))  # размер подвыборки, на основе которой будет считаться градиент функции потерь
+    eta = float(input('Введите коэффицент обучаемости (0.1-1.5): ')) # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
 
-# создаем обучающую и тестировочную выборку
-x1_train = 2 * np.random.rand(100) - 1  # случайные значения для x1 в отрезке [-1;1]
-x2_train = 2 * np.random.rand(100) - 1  # случайные значения для x2 в отрезке [-1;1]
-f_train = 0.5 * np.sin(np.pi * x1_train * x2_train) * np.sin(2 * np.pi * x2_train * x2_train)
+    x_train = 9 * np.random.rand(250, 1) + 1
+    y_train = np.exp((-1) * x_train)
 
-x1_test = 2 * np.random.rand(100) - 1
-x2_test = 2 * np.random.rand(100) - 1
-f_test = 0.5 * np.sin(np.pi * x1_test * x2_test) * np.sin(2 * np.pi * x2_test * x2_test)
+    x_test = 9 * np.random.rand(40, 1) + 1
+    y_test = np.exp((-1) * x_test)
 
-data_train = [(np.array([x1, x2]).reshape(2, 1), f) for x1, x2, f in zip(x1_train, x2_train,
-                                                                         f_train)]  # класс сети принимает на вход кортеж (x,y) вот здесь мы и создаем кортежи такого вида
-data_test = [(np.array([x1, x2]).reshape(2, 1), f) for x1, x2, f in zip(x1_test, x2_test, f_test)]
+    for i in range(1, 15):
+        data_train = np.concatenate((x_train, y_train), 1)
 
-for i in range(3, 10):
+        nn = Network([1, i, 1])
+        nn.SGD(data_train, epochs, batch_size, eta)
 
-    nn = Network([2, i, 1])  # инициализация сети, в этот раз на входе две переменные
-    nn.SGD(data_train, epochs, batch_size, eta)  # Запуск градиентного спуска
+        x = np.arange(1.0, 10.0, 0.01)
+        y = np.exp((-1) * x)
 
-    f_pred = np.array([nn.feedforward(test[0]) for test in data_test])  # предсказания сети считаются также
+        y_pred = np.array([nn.feedforward(x) for x in x_test.flatten()])
+        error = 100 * np.sum(np.abs((y_pred.flatten() - y_test.flatten()) / y_test.flatten())) / len(y_test.flatten())
+        print('Количество нейронов в скрытом слое:{0}'.format(i))
+        print('Количество эпох:{0}'.format(epochs))
+        print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
+        print('Обучающий коэффициент:{0}'.format(eta))
+        print('Ошибка:{:.2f}%'.format(error))
 
-    error = 100 * np.sum(np.abs((f_pred.flatten() - f_test.flatten()) / f_test.flatten())) / len(
-        f_test.flatten())  # ошибка считается также
+        fig, ax = plt.subplots()
+        ax.plot(x, y)
 
-    print('Количество нейронов в скрытом слое:{0}'.format(i))
-    print('Количество эпох:{0}'.format(epochs))
-    print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
-    print('Обучающий коэффициент:{0}'.format(eta))
-    print('Ошибка:{:.2f}%'.format(error))
+        ax.set(xlabel='x', ylabel='y', title='y=e^(-x) слои:{0} шаги:{1} коэф.об-ти:{2} выборка:{3} ошибка:{4:.2f}%'.format(i,epochs,eta, batch_size,error))
+        ax.grid()
 
-    x1 = np.arange(-1, 1, 0.01)  # множество значений x1 для построения поверхности
-    x2 = np.arange(-1, 1, 0.01)  # множество значений x2 для построения поверхности
-    x1, x2 = np.meshgrid(x1, x2)  # сетка
+        plt.scatter(x_test, y_pred)
+        plt.scatter(x_test, y_test)
+        plt.show()
+        fig.savefig('plots/second_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
+elif choice==3:
+    x_train = (np.pi / 2 - 1) * np.random.rand(250, 1) + 1
+    y_train = np.cos(x_train)
 
-    f = 0.5 * np.sin(np.pi * x1 * x2) * np.sin(2 * np.pi * x2 * x2)  # значение функции
+    x_test = (np.pi / 2 - 1) * np.random.rand(40, 1) + 1
+    y_test = np.cos(x_test)
 
-    # Plot the surface
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    ax.plot_surface(x1, x2, f, vmin=f.min() * 2)  # строим поверхность
-    ax.scatter(x1_test, x2_test, f_pred, c='red')  # предсказанные точки
-    ax.scatter(x1_test, x2_test, f_test, c='green')  # реальные точки
+    epochs = int(input('Введите количество шагов алгоритма(500-1500): '))  # кол-во шагов
+    batch_size = int(input('Введите размер подвыборки(3-10): '))
+    # размер подвыборки, на основе которой будет считаться градиент функции потерь
+    eta = float(input('Введите коэффицент обучаемости (0.1-1.5): '))
+    # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
 
-    ax.set(xticklabels=[],
-           yticklabels=[],
-           zticklabels=[])
+    for i in range(3, 10):
+        data_train = np.concatenate((x_train, y_train), 1)
 
-    plt.show()
-    fig.savefig('plots/fourth_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
+        nn = Network([1, i, 1])
+        nn.SGD(data_train, epochs, batch_size, eta)
+
+        x = np.arange(1.0, 1.58, 0.01)
+        y = np.cos(x)
+
+        y_pred = np.array([nn.feedforward(x) for x in x_test.flatten()])
+        error = 100 * np.sum(np.abs((y_pred.flatten() - y_test.flatten()) / y_test.flatten())) / len(y_test.flatten())
+        print('Количество нейронов в скрытом слое:{0}'.format(i))
+        print('Количество эпох:{0}'.format(epochs))
+        print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
+        print('Обучающий коэффициент:{0}'.format(eta))
+        print('Ошибка:{:.2f}%'.format(error))
+
+        fig, ax = plt.subplots()
+        ax.plot(x, y)
+
+        ax.set(xlabel='x', ylabel='y', title='y=cos(x) слои:{0} шаги:{1} коэф.об-ти:{2} выборка:{3} ошибка:{4:.2f}%'.format(i,epochs,eta, batch_size,error))
+        ax.grid()
+
+        plt.scatter(x_test, y_pred)
+        plt.scatter(x_test, y_test)
+        plt.show()
+        fig.savefig('plots/third_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
+
+elif choice==4:
+    epochs = int(input('Введите количество шагов алгоритма(500-1500): '))  # кол-во шагов
+    batch_size = int(input('Введите размер подвыборки(3-10): '))  # размер подвыборки, на основе которой будет считаться градиент функции потерь
+    eta = float(input('Введите коэффицент обучаемости (0.1-1.5): ')) # обучающий коэффициент, на самом деле коэффициент шага будет зависеть и от batch_size и будет выглядеть eta/batch_size, так что стоит рассматривать два последних параметра вместе
+
+    # создаем обучающую и тестировочную выборку
+    x1_train = 2 * np.random.rand(500) - 1  # случайные значения для x1 в отрезке [-1;1]
+    x2_train = 2 * np.random.rand(500) - 1  # случайные значения для x2 в отрезке [-1;1]
+    f_train = 0.5 * np.sin(np.pi * x1_train * x2_train) * np.sin(2 * np.pi * x2_train * x2_train)+0.5
+
+    x1_test = 2 * np.random.rand(1000) - 1
+    x2_test = 2 * np.random.rand(1000) - 1
+    f_test = 0.5 * np.sin(np.pi * x1_test * x1_test) * np.sin(2 * np.pi * x2_test)+0.5
+
+    data_train = np.array([(np.array([x1, x2]).reshape(2, 1), f) for x1, x2, f in zip(x1_train, x2_train, f_train)],
+                          object)  # класс сети принимает на вход кортеж (x,y) вот здесь мы и создаем кортежи такого вида
+    data_test = np.array([(np.array([x1, x2]).reshape(2, 1), f) for x1, x2, f in zip(x1_test, x2_test, f_test)], object)
+
+    for i in range(9, 25):
+
+        nn = Network([2, i, 1])  # инициализация сети, в этот раз на входе две переменные
+        nn.SGD(data_train, epochs, batch_size, eta)  # Запуск градиентного спуска
+
+        f_pred = np.array([nn.feedforward(test[0]) for test in data_test])  # предсказания сети считаются также
+
+        error = 100 * np.sum(np.abs((f_pred.flatten() - f_test.flatten()) / f_test.flatten())) / len(
+            f_test.flatten())  # ошибка считается также
+
+        print('Количество нейронов в скрытом слое:{0}'.format(i))
+        print('Количество эпох:{0}'.format(epochs))
+        print('Количество наблюдений в выборке для поиска градиента:{0}'.format(batch_size))
+        print('Обучающий коэффициент:{0}'.format(eta))
+        print('Ошибка:{:.2f}%'.format(error))
+
+        x1 = np.arange(-1, 1, 0.01)  # множество значений x1 для построения поверхности
+        x2 = np.arange(-1, 1, 0.01)  # множество значений x2 для построения поверхности
+        x1, x2 = np.meshgrid(x1, x2)  # сетка
+
+        f = 0.5 * np.sin(np.pi * x1 * x1) * np.sin(2 * np.pi * x2)+0.54  # значение функции
+
+        # Plot the surface
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        #ax.plot_surface(x1, x2, f, vmin=f.min() * 2)  # строим поверхность
+        ax.scatter(x1_test, x2_test, f_pred, c='red')  # предсказанные точки
+        ax.scatter(x1_test, x2_test, f_test, c='green')  # реальные точки
+
+        ax.set(xlabel='x1', ylabel='x2', zlabel='f')
+
+        plt.show()
+        fig.savefig('plots/fourth_approx_{0}layers_{1}epochs_{2}lr_{3}batchsize.png'.format(i,epochs,eta, batch_size), dpi=300)
+
+else:
+    print('Неверно введен номер функции')
